@@ -1,3 +1,4 @@
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
@@ -33,36 +34,26 @@ public class PaymentScheduler {
 		paymentPeriods = 0;
 	}
 	
-	// Prompt for the users bills to pay
-	public void promptForBills() {
-		boolean done = false;
+	// Prompt for the users bill file
+	public String promptForBillFilename() {
+		System.out.print("Enter the name of your bills file: ");
 		Scanner scan = new Scanner(System.in);
-		
-		// Continue collecting info until user is done
-		while (!done) {
-		  System.out.print("Enter name of a new bill or 'done' to finish: ");
-		  String name = scan.next();
-		  // Stop collecting info if user is done
-		  if (name.equals("done")) {
-			  done = true;
-			  break;
-		  }
-		  // Prompt for amount and date
-		  System.out.print("Enter the amount due: ");
-		  float amountDue = scan.nextFloat();
-		  System.out.print("Enter the month due: ");
-		  int month = scan.nextInt();
-		  System.out.print("Enter the day due: ");
-		  int day = scan.nextInt();
-		  System.out.print("Enter the year due: ");
-		  int year = scan.nextInt();
-		  
-		  // Add new bill to the list
-		  bills.add( new Bill( name, amountDue, new Date(month, day, year) ) );
-		}
-		
-		System.out.print("Enter the number of periods to pay the bills in: ");
-		paymentPeriods = scan.nextInt();
+		String filename = scan.next();
+		/* I learned that closing this scanner makes console input unavailable
+		 * for the rest of the program.  This causes problems since we still need to
+		 * read the payment periods.  Time for a small refactor, or maybe this won't
+		 * be an issue after making a gui!
+		 */
+		//scan.close();
+		return filename;
+	}
+
+	// Asks the user for the amount of payment periods
+	public void promptForPaymentPeriods() {
+		System.out.print("Enter the number of payment periods: ");
+		Scanner scan = new Scanner(System.in);
+		paymentPeriods = Integer.parseInt(scan.next());
+		scan.close();
 	}
 	
 	// Generate the most efficient schedule and store it
@@ -93,7 +84,7 @@ public class PaymentScheduler {
 		if (bills.size() == paymentPeriods) {
 			for (int i = 0; i < paymentPeriods; i++) {
 				Packet p = new Packet();
-				p.addBill(bills.remove(bills.size() - 1));
+				p.addBill(bills.remove(0));
 				best.addPacket(p);
 			}
 			return best;
@@ -120,14 +111,30 @@ public class PaymentScheduler {
 	public Schedule getSchedule() {
 		return paymentSchedule;
 	}
-
-	public static void main(String[] args) {
-		// Instantiate the PaymentScheduler and begin prompt
-		PaymentScheduler paymentScheduler = new PaymentScheduler();
-		paymentScheduler.promptForBills();
-		// Generate and print the most efficient schedule
-		paymentScheduler.generateSchedule();
-		System.out.println(paymentScheduler.getSchedule().toString());
+	
+	public ArrayList<Bill> getBills() {
+		return bills;
+	}
+	
+	//Setters
+	public void setBills(ArrayList<Bill> bills) {
+		this.bills = bills;
 	}
 
+	public static void main(String[] args) {
+		// Instantiate the PaymentScheduler and attempt to load the file
+		PaymentScheduler paymentScheduler = new PaymentScheduler();
+		String filename = paymentScheduler.promptForBillFilename();
+		try {
+			paymentScheduler.setBills(BillFileParser.extractBills(filename));
+			// Get payment periods
+			paymentScheduler.promptForPaymentPeriods();
+			// Generate and print the most efficient schedule
+			paymentScheduler.generateSchedule();
+			System.out.println(paymentScheduler.getSchedule().toString());
+		} catch (FileNotFoundException e) {
+			System.out.println("The bills file was not found: ");
+			System.out.println(e.getMessage());
+		}
+	}
 }
