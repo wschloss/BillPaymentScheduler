@@ -65,7 +65,7 @@ public class PaymentScheduler {
 	}
 	
 	// Algorithm that finds the schedule with the minimum cost
-	public Schedule findOptimumSchedule(ArrayList<Bill> bills, int paymentPeriods) {
+	public Schedule findOptimumSchedule(ArrayList<Bill> billList, int paymentPeriods) {
 		// Recursive relation can be defined as:
 		// best(all, kPeriods) = packet(last j bills) + best(all - last j, kPeriods - 1)
 		// Iterating over j can find the optimum schedule
@@ -76,30 +76,28 @@ public class PaymentScheduler {
 		
 		// Must pay all in one period
 		if (paymentPeriods == 1) {
-			best.addPacket(new Packet(bills));
+			best.addPacket(new Packet(billList));
 			return best;
 		}
-		
-		// Best is to pay one each period if bills.size is equal to number of periods
-		if (bills.size() == paymentPeriods) {
+		// Packet's to make today
+		Packet p = new Packet();
+		// Best is to pay one each period if billList.size is equal to number of periods
+		if (billList.size() == paymentPeriods) {
 			for (int i = 0; i < paymentPeriods; i++) {
-				Packet p = new Packet();
-				p.addBill(bills.remove(0));
+				p = new Packet();
+				p.addBill(billList.get(i));
 				best.addPacket(p);
 			}
 			return best;
 		}
 		
+		int maxIterations = billList.size() - paymentPeriods + 1;
 		// Pay at least one today, all the way to pay one on all previous days
-		for (int i = 1; i < bills.size() - paymentPeriods + 1; i++) {
-			Packet p = new Packet();
-			// Add the last j bills to this packet
-			for (int j = 0; j < i; j++) {
-		        // Move bill from array to packet.
-				p.addBill(bills.remove(bills.size() - 1));
-			}
+		for (int i = 0; i < maxIterations; i++) {
+			// Add another bill (the last one) to the packet to pay now
+			p.addBill(billList.remove(billList.size() - 1));
 			// Recursive call to find full schedule
-			Schedule attempt = findOptimumSchedule(bills, paymentPeriods - 1).addPacket(p);
+			Schedule attempt = findOptimumSchedule(new ArrayList<Bill>(billList), paymentPeriods - 1).addPacket(new Packet(p));
 			if (attempt.cost() < best.cost())
 				best = attempt;
 		}

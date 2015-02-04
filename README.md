@@ -10,11 +10,10 @@ I consider the cost of the packet to be the sum of all the bills in it, and the 
 <ul>
 <li>Console interaction to get the users bill file and payment periods</li>
 <li>All helper classes needed so far are written</li>
-<li>A recursive algorithm to find the best schedule (has a few errors)</li>
+<li>A recursive algorithm to find the best schedule</li>
 </ul>
 <h3>Some improvements I want to make:</h3>
 <ul>
-<li>Fix the algorithm! Some bills are being dropped.</li>
 <li>A test suite would probably be nice</li>
 <li>A little more exception handling would be nice as well</li>
 <li>Modify the recursive solution to one that uses dynamic programming - would make it faster for extreme situations with lots of bills and many payment periods</li>

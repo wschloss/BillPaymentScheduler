@@ -18,6 +18,11 @@ public class Packet {
 		this.bills = bills;
 	}
 	
+	// Copy constructor
+	public Packet(Packet other) {
+		this.bills = new ArrayList<Bill>(other.getBills());
+	}
+	
 	public void addBill(Bill b) {
 		bills.add(b);
 	}
@@ -30,6 +35,11 @@ public class Packet {
 			sum += b.getAmountDue();
 		}
 		return sum;
+	}
+	
+	// Getters
+	public ArrayList<Bill> getBills() {
+		return bills;
 	}
 	
 	// Easy printing
