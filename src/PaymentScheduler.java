@@ -1,7 +1,12 @@
+import java.awt.BorderLayout;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /*
  * The PaymentScheduler is used to prompt for the users bills and the amount
@@ -20,7 +25,16 @@ import java.util.Scanner;
  * cost(packet) = sum(billAmounts)
  * cost(schedule) = max( cost(packetsInSchedule) )
  */
-public class PaymentScheduler {
+public class PaymentScheduler extends JFrame {
+	// Frame dimensions
+	public static final int DEFAULT_SIZE_X = 900;
+	public static final int DEFAULT_SIZE_Y = 600;
+	
+	// Gui panels, sidebar has buttons for loading/generating
+	// logPanel is used to display results
+	private SideBar sideBar;
+	private LogPanel logPanel;
+	
 	// Store list of bill objects and the best schedule
 	private ArrayList<Bill> bills;
 	private Schedule paymentSchedule;
@@ -32,36 +46,37 @@ public class PaymentScheduler {
 		bills = new ArrayList<Bill>();
 		// Init payment periods to zero for safety
 		paymentPeriods = 0;
-	}
-	
-	// Prompt for the users bill file
-	public String promptForBillFilename() {
-		System.out.print("Enter the name of your bills file: ");
-		Scanner scan = new Scanner(System.in);
-		String filename = scan.next();
-		/* I learned that closing this scanner makes console input unavailable
-		 * for the rest of the program.  This causes problems since we still need to
-		 * read the payment periods.  Time for a small refactor, or maybe this won't
-		 * be an issue after making a gui!
-		 */
-		//scan.close();
-		return filename;
+		
+		// Gui initialization
+		this.setSize(DEFAULT_SIZE_X, DEFAULT_SIZE_Y);
+		this.setResizable(false);
+		sideBar = new SideBar(this);
+		logPanel = new LogPanel();
+		this.add(sideBar, BorderLayout.WEST);
+		this.add(logPanel, BorderLayout.CENTER);
 	}
 
-	// Asks the user for the amount of payment periods
-	public void promptForPaymentPeriods() {
-		System.out.print("Enter the number of payment periods: ");
-		Scanner scan = new Scanner(System.in);
-		paymentPeriods = Integer.parseInt(scan.next());
-		scan.close();
+	// Asks the user for the amount of payment periods with a popup
+	public int promptForPaymentPeriods() {
+		// Display an option pane, get the users input (number of payment periods) as a string
+		String s = (String)JOptionPane.showInputDialog(
+							this,
+							"Enter the number of payment periods",
+							"Generate a bill schedule",
+							JOptionPane.PLAIN_MESSAGE);
+		return Integer.parseInt(s);
 	}
 	
 	// Generate the most efficient schedule and store it
 	public void generateSchedule() {
 		// Sort the bills by due date first
 		Collections.sort(bills, Bill.BillComparator);
-		// Pass a copy of bills since it will get modified
+		// Ask the user for the number of periods with a popup
+		paymentPeriods = promptForPaymentPeriods();
+		// Pass a copy of bills to the algorithm since it will get modified
 		paymentSchedule = findOptimumSchedule(new ArrayList<Bill>(bills), paymentPeriods);
+		//Print the schedule to the log pane
+		logPanel.setLogText(paymentSchedule.toString());
 	}
 	
 	// Algorithm that finds the schedule with the minimum cost
@@ -120,19 +135,14 @@ public class PaymentScheduler {
 	}
 
 	public static void main(String[] args) {
-		// Instantiate the PaymentScheduler and attempt to load the file
-		PaymentScheduler paymentScheduler = new PaymentScheduler();
-		String filename = paymentScheduler.promptForBillFilename();
-		try {
-			paymentScheduler.setBills(BillFileParser.extractBills(filename));
-			// Get payment periods
-			paymentScheduler.promptForPaymentPeriods();
-			// Generate and print the most efficient schedule
-			paymentScheduler.generateSchedule();
-			System.out.println(paymentScheduler.getSchedule().toString());
-		} catch (FileNotFoundException e) {
-			System.out.println("The bills file was not found: ");
-			System.out.println(e.getMessage());
-		}
+		// Init the gui as a runnable
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				PaymentScheduler gui = new PaymentScheduler();
+				// Set to exit on close and display the gui
+				gui.setDefaultCloseOperation(EXIT_ON_CLOSE);
+				gui.setVisible(true);
+			}
+		});
 	}
 }

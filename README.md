@@ -8,13 +8,17 @@ I consider the cost of the packet to be the sum of all the bills in it, and the 
 <hr>
 <h3>Some things that are working:</h3>
 <ul>
-<li>Console interaction to get the users bill file and payment periods</li>
-<li>All helper classes needed so far are written</li>
+<li>Basic ugly GUI!</li>
+<li>User can hit the load button, and use a file prompt to select a bills file</li>
+<li>User can hit the generate button, pick a number of payment periods, and the best payment groups are displayed</li>
 <li>A recursive algorithm to find the best schedule</li>
 </ul>
 <h3>Some improvements I want to make:</h3>
 <ul>
+<li>Make the GUI look nicer</li>
 <li>A test suite would probably be nice</li>
 <li>A little more exception handling would be nice as well</li>
 <li>Modify the recursive solution to one that uses dynamic programming - would make it faster for extreme situations with lots of bills and many payment periods</li>
-<li>Build a gui, most likely with Java Swing, which is why I chose Java to write this</li>
+<li>Let user create bills and save them to a file so they don't have to write one in the rigid format</li>
+<li>Take income into account in the algorithm</li>
+</ul>
